@@ -1,0 +1,27 @@
+body {
+    margin: 0;
+}
+canvas {
+    /* width: 700px;
+    height: 1000px; */
+
+}
+
+#dimensions {
+    position: absolute;
+    right: 100px;
+}
+
+#UI {
+    display: grid;
+    grid-template-rows: auto 700px;
+    height: 100vh;
+}
+
+th {
+    text-align: left;
+}
+
+td:nth-child(even), th:nth-child(even) {
+    background-color: #D6EEEE;
+}
