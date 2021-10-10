@@ -23,8 +23,8 @@ tr {
 }
 #UI {
     display: grid;
-    grid-template-rows: 400px auto auto;
-    height: 100vh;
+    grid-template-rows: 400px min-content auto;
+    /* height: 100vh; */
 }
 
 th {
