@@ -7,13 +7,24 @@ export function CanvasManagerFactory(canvasEl) {
     }
 
     // draw a line 
-    function line(x1, y1, x2, y2, linewidth) {
+    function line(x1, y1, x2, y2, color, linewidth) {
         c.lineWidth = linewidth;
         c.beginPath();
         c.moveTo(x1, y1);
         c.lineTo(x2, y2);
-        c.strokeStyle = "rgba(0, 0, 200, 0.8)";
+        c.strokeStyle = color;
         c.stroke();
+    }
+
+    function arrow(x, y, length, angle, color, size) {
+        c.translate(x, y);
+        c.rotate(-angle);
+
+        line(0, 0, length - (size*Math.sqrt(2)/2), 0, color, size/2);
+        triangleTip(length, 0, color, size)
+
+        c.rotate(angle);
+        c.translate(-x, -y);
     }
 
     // draw a circle
@@ -25,20 +36,50 @@ export function CanvasManagerFactory(canvasEl) {
         c.fill();
     }  
 
-    // draws a pin joint
-    function pin(x, y, color, size) {
-        moveTo()
+    // draws a triangle that can rotate about its tip
+    function triangleTip(x, y, color, size, angle) {
+        c.translate(x,y);
+        c.rotate(-angle);
         c.beginPath();
-        c.lineTo(x, y);
-        // c.stroke();
+        c.moveTo(0, 0);
+        c.lineTo(0 - Math.sqrt(3)/2 * size, 0 + size/2);
+        c.lineTo(0 - Math.sqrt(3)/2 * size, 0 - size/2);
         c.fillStyle = color;
         c.fill();
-        c.stroke();
+        c.rotate(angle);
+        c.translate(-x, -y);
+    }
+
+    function surface(x, y, size, color, angle) {
+        c.translate(x,y);
+        c.rotate(-angle)
+        line(size*1.5, - 1.5*size, size*1.5, 1.5*size, color, size/5);
+        c.rotate(angle)
+        c.translate(-x, -y)
+
+    }
+
+    // draws a pin joint
+    function pin(x, y, color, size, angle) {
+        c.translate(x,y);
+        c.rotate(-angle);
+        surface(0 + size * (Math.sqrt(3)/2)/1.5, 0, size, "rgb(0,0,0)", 0); 
+        triangleTip(0, 0, color, size*2, Math.PI);
+        c.rotate(angle);
+        c.translate(-x, -y);
     }
 
     // draws a roller joint 
-    function roller(x, y, color, size) {
-        pin(x, y, color, size);
+    function roller(x, y, color, size, angle) {
+        
+        c.translate(x,y);
+        c.rotate(-angle);
+        circle(0 + size *2, 0 - size * (1-Math.sqrt(3))/2, (2+Math.sqrt(3)), "rgb(120,120,120)")
+        circle(0 + size *2, 0 + size * (1-Math.sqrt(3))/2, (2+Math.sqrt(3)), "rgb(120,120,120)")
+        surface(0 + size, 0, size, "rgb(0,0,0)", 0); 
+        triangleTip(0, 0, color, size*2, Math.PI);
+        c.rotate(angle);
+        c.translate(-x, -y);
 
     }
 
@@ -50,6 +91,8 @@ export function CanvasManagerFactory(canvasEl) {
         line: line,
         roller: roller,
         pin: pin,
+        arrow: arrow,
+        triangleTip: triangleTip
 
     }
 

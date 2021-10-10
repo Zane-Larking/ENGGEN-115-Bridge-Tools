@@ -12,9 +12,18 @@ canvas {
     right: 100px;
 }
 
+table {
+    display: block;
+    width: max-content;
+    max-height: 300px;
+    overflow-y: scroll;
+}
+tr {
+    min-width: 100px;
+}
 #UI {
     display: grid;
-    grid-template-rows: auto 700px;
+    grid-template-rows: 400px auto auto;
     height: 100vh;
 }
 

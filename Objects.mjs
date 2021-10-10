@@ -6,10 +6,11 @@ export function Color(r,g,b,a = 1) {
     this.b = b;
     this.a = a;
 }
-Color.prototype.lerp = function(other, t) {
-    this.r = this.r * (1-t) + (other.r * t);
-    this.g = this.g * (1-t) + (other.g * t);
-    this.b = this.b * (1-t) + (other.b * t);
+Color.prototype.lerp = function(color1, color2, t) {
+    this.r = color1.r * (1-t) + (color2.r * t);
+    this.g = color1.g * (1-t) + (color2.g * t);
+    this.b = color1.b * (1-t) + (color2.b * t);
+    return this;
 }
 Color.prototype.rgba = function() {
     return `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`
@@ -24,10 +25,12 @@ Color.prototype.rgb = function() {
 export const Pos = function(x,y) {
     this.x = x;
     this.y = y;
-
+    this.id = Math.random();
     // DONE
     this.dist = (other) => {
-        Math.hypot(this.x - other.x, this.y - other.y);
+        // console.log("this: ", this);
+        // console.log("other: ", other);
+        return Math.hypot(this.x - other.x, this.y - other.y);
     }
 
     // DONE
@@ -59,7 +62,7 @@ export const Pos = function(x,y) {
         // Minimum distance from
         // this point to the line segment
         var out = 0;
-
+        
         // if the AB or BE casts down a projection (dot product) that does not fall between A and B then this point is not perpendicular to any point along AB  
         if (AB_BE > 0 || AB_AE < 0) {
             out = -1;
@@ -75,7 +78,7 @@ export const Pos = function(x,y) {
             var y2 = AE.y;
             var mod = Math.sqrt(x1 * x1 + y1 * y1);
             out = Math.abs(x1 * y2 - y1 * x2) / mod;
-        }
+        }   
         return out;
     }
 }

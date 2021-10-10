@@ -20,8 +20,12 @@
             <canvas id="bridge-canvas"></canvas>
         </div>
         <div class="options">
-            <button disabled="disabled" onclick="addPin">Add Pin</button>
-            <button disabled="disabled" onclick="addPin">Add Roller</button>
+            <button id="force-btn" disabled="disabled" onclick="addPin">Add Force</button>
+            <button id="pin-btn" disabled="disabled" onclick="addPin">Add Pin</button>
+            <button id="roller-btn" disabled="disabled" onclick="addPin">Add Roller</button>
+            <button id="lengths-btn" disabled="disabled" onclick="addPin">Show lengths</button>
+            <button id="labels-btn" disabled="disabled" onclick="addPin">Show Labels</button>
+            <button id="replace-joints-btn" disabled="disabled" onclick="addPin">Replace Joints</button>
             <table>
                 <caption>Members</caption>
                 <thead>
@@ -42,7 +46,7 @@
 
         </div>
         <div id="dimensions">
-            <input type="text" name="length" id="length">
+            <input type="text" name="length" id="length" focusible>
             <input type="text" name="angle" id="angle">
         </div>
     </div>

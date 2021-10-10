@@ -1,9 +1,7 @@
 import {Bridge} from './bridgeComponents.mjs';
-import {MemberTableFactory} from './memberTable.js';
 import {CanvasManagerFactory} from './canvasManager.mjs';
 import {Pos} from './Objects.mjs';
 
-const e = React.createElement;
 
 
 
@@ -21,11 +19,23 @@ let canvasManager = CanvasManagerFactory(canvas);
 
 function MouseFactory(HTMLelement) {
     var mousePos = new Pos(0, 0);
-    HTMLelement.addEventListener("mousemove", (event) => {
-        mousePos.x = event.x - HTMLelement.offsetLeft;
-        mousePos.y = event.y - HTMLelement.offsetTop;
-        console.log(mousePos);
-    });
+    mousePos.raw = {};
+    let update = (event) => {        // gets the amount the user has scrolled
+        let scrollTop = (window.scrollY !== undefined) ? window.scrollY : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+        let scrollLeft = (window.scrollX !== undefined) ? window.scrollX : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+        console.log(event);
+
+        mousePos.raw.x = event.x - HTMLelement.offsetLeft || mousePos.raw.x;
+        mousePos.raw.y = event.y - HTMLelement.offsetTop || mousePos.raw.y;
+        
+        mousePos.x = mousePos.raw.x + scrollLeft;
+        mousePos.y = mousePos.raw.y + scrollTop;
+
+        console.log(mousePos.x, mousePos.y);
+};
+    HTMLelement.addEventListener("mousemove", update);
+    document.addEventListener("scroll", update);
+        // console.log(mousePos);
     return mousePos;
 }
 
@@ -47,9 +57,10 @@ var handleResize = () => {
     console.log(innerWidth);
     // height and width
     let optonsEl = document.querySelector(".options");
-    let infoHeight = Number(getComputedStyle(optonsEl).height.slice(0,-2));
-    canvas.height = window.innerHeight - infoHeight;
-    canvas.width = innerWidth - 20;
+    // let infoHeight = Number(getComputedStyle(optonsEl).height.slice(0,-2));
+    // canvas.height = window.innerHeight - infoHeight;
+    canvas.height = 400;
+    canvas.width = innerWidth;
     bridge.draw();
 }
 setTimeout(() => {
@@ -58,8 +69,7 @@ setTimeout(() => {
 
 window.onresize = handleResize;
 
-
-canvas.addEventListener("click", bridge.handleClick);
+bridge.init(canvas);
 
 console.log(bridge);
 
@@ -92,7 +102,15 @@ console.log(j.neighbours);
 j.members.values().next().value.handleClick(new Pos(200,200));
 
 bridge.removeJoint(j);
+
+bridge.addExtForce(300, Math.PI*3/2);
+// bridge.setRoller();
 // exports = {Bridge: Bridge};
+
+console.log(
+    bridge.isDeterminant()
+
+);
 
 console.log(bridge);
 
@@ -112,9 +130,6 @@ console.log(bridge);
 ? =================== table Setup ===================== ?
 ? ===================================================== ?
 */
-
-const domContainer = document.querySelector('tbody');
-ReactDOM.render(e(MemberTableFactory(bridge.members)), domContainer);
 document.querySelector("#UI").style.gridTemplateRows = "auto min-content";
 
 // ? Methods to implimement in bridgeCompoments.mjs

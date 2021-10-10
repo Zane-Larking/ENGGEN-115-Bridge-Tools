@@ -1,14 +1,15 @@
 
 'use strict';
 function MemberRow(member){
+    console.log(member);
     return (
         <tr key={member.id}>
-            <td>{member.id}</td>
-            <td>{member.force}</td>
-            <td>{(member.force < 0 ? "compression": "tension")}</td>
-            <td>{member.cap()}</td>
-            <td>{member.cost()}</td>
-            <td>{member.force/member.cap()}</td>
+            <td>{`${member.id}`}</td>
+            <td>{`${member.force} N`}</td>
+            <td>{(member.force < 0 ? "Compression": "Tension")}</td>
+            <td>{`${member.cap(member.bridge.safetyFactor).toFixed(2)} N`}</td>
+            <td>{`$${member.cost()}`}</td>
+            <td>{`${member.cap(member.bridge.safetyFactor)/member.force}`}</td>
         </tr>
     );
 }
