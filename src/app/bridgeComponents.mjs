@@ -2,6 +2,7 @@ import { IdGenerator } from './idGenerator.mjs';
 import { Color, Vector, Pos } from './Objects.mjs';
 import { MemberTable } from './memberTable.js';
 import { Ceres } from 'https://cdn.jsdelivr.net/gh/Pterodactylus/Ceres.js@master/Ceres-v1.5.3.js'
+import { Capacity } from './capacity.js';
 
 
 const e = React.createElement;
@@ -728,7 +729,8 @@ const Member = function (bridge, joints) {
 
 export const Bridge = function (canvasManager, mouse) {
     this.CM = canvasManager;
-    this.domContainer = document.querySelector('tbody');
+    this.memberTableContainer = document.querySelector("tbody");
+    this.failureInfoContainer = document.querySelector("#failure-info");
 
     this.mouse = mouse;
     this.mouse.dragging = false;
@@ -772,10 +774,6 @@ export const Bridge = function (canvasManager, mouse) {
     this.roller;
     this.safetyFactor = 0.8;
     this.singleCapacity = 230;
-
-
-
-    this.domContainer = document.querySelector('tbody');
 
     this.init = (canvas) => {
         // click event for canvas
@@ -1561,9 +1559,33 @@ export const Bridge = function (canvasManager, mouse) {
 
         // DONE
         // * updates the members table component
-
         let memberTable = MemberTable({ members: this.members });
-        ReactDOM.render(memberTable, this.domContainer);
+        ReactDOM.render(memberTable, this.memberTableContainer);
+
+        let weakest = [...this.members.values()].reduce((prev, cur) => {
+            console.log(cur.safetyFactor());
+            return ((prev.safetyFactor ? prev.safetyFactor() : 10000) > cur.safetyFactor() ? cur: prev)
+        })
+
+        // * updates the failure info component
+        // NOTE This assumes there is only one force even though I've made it possible to ad muliple
+        if (this.forceJoints.size > 0 && this.isDeterminant()) {
+            var extForce = [...[...this.forceJoints.values()][0].extForces.values()][0];
+            console.log(this.forceJoints);
+            console.log(extForce);
+
+            console.log(weakest);
+            let capacity = extForce.mag * weakest.safetyFactor();
+            let breakingForce = Math.abs(weakest.force) * weakest.safetyFactor();
+            
+            let failureInfo = Capacity({
+                cap: capacity, 
+                brokenMember: weakest.id, 
+                forceType: (weakest.force < 0 ? "Compression" : "Tension"), 
+                force: breakingForce
+            });
+            ReactDOM.render(failureInfo, this.failureInfoContainer);
+        }
 
 
         // *draws the canvas
@@ -1573,7 +1595,7 @@ export const Bridge = function (canvasManager, mouse) {
         document.querySelector("#UI").style.gridTemplateRows = "auto min-content";
 
 
-        // ReactDOM.render(memberTable, domContainer);
+        // ReactDOM.render(memberTable, memberTableContainer);
 
 
 

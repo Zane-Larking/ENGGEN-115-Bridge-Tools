@@ -18,7 +18,6 @@ function MemberRow(props){
     );
 }
 function MemberTable(props) {
-    
     return (
         Array.from(props.members.values()).map((member) => {
             return <MemberRow member={member}/>

@@ -55,7 +55,6 @@ function MemberRow(props) {
     );
 }
 function MemberTable(props) {
-
     return Array.from(props.members.values()).map(function (member) {
         return React.createElement(MemberRow, { member: member });
     });
