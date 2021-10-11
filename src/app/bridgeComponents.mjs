@@ -1,6 +1,6 @@
 import {IdGenerator} from './idGenerator.mjs';
 import {Color, Vector, Pos} from './Objects.mjs';
-import {MemberTableFactory} from './memberTable.js';
+import {MemberTable} from './memberTable.js';
 
 
 const e = React.createElement;
@@ -625,6 +625,15 @@ export const Bridge = function(canvasManager, mouse) {
     this.safetyFactor = 0.8;
     this.singleCapacity = 230;
 
+    this.btns = {
+        forceBtn: document.querySelector("#force-btn"),
+        pinBtn: document.querySelector("#pin-btn"),
+        rollerBtn: document.querySelector("#roller-btn"),
+        lengthsBtn: document.querySelector("#lengths-btn"),
+        labelsBtn: document.querySelector("#labels-btn"),
+        replaceJointsBtn: document.querySelector("#replace-joints-btn")
+    }
+
     this.domContainer = document.querySelector('tbody');
     
     this.init = (canvas) => {
@@ -988,7 +997,7 @@ export const Bridge = function(canvasManager, mouse) {
         // TODO
         // * updates the members table component
         
-        let memberTable = e(MemberTableFactory(this.members));
+        let memberTable = MemberTable({members: this.members});
         ReactDOM.render(memberTable, this.domContainer);
         
 
