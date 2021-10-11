@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bridge tool</title>
+
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <!-- <script src="./canvasManager.mjs"></script> -->
+    <script defer src="../app/bridgeComponents.mjs" type="module"></script>
+    <script defer src="../app/main.js" type="module"></script>
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+    <div id="UI">
+        <div class="wrapper">
+            <canvas id="bridge-canvas"></canvas>
+        </div>
+        <div class="options">
+            <button id="force-btn">Add Force</button>
+            <button id="pin-btn">Set Pin</button>
+            <button id="roller-btn">Set Roller</button>
+            <button id="forces-btn">Show Forces</button>
+            <button id="lengths-btn">Show Lengths</button>
+            <button id="angles-btn">Show Angles</button>
+            <button id="labels-btn">Show Labels</button>
+            <button id="replace-joints-btn">Replace Joints</button>
+            <select disabled id="member-type">
+                <option value="-1"></option>
+                <option value="0">Single</option>
+                <option value="1">Double</option>
+                <option value="2">Triple</option>
+                <option value="3">Spaced</option>
+                <option value="4">Double-Spaced</option>
+            </select>
+            <select disabled id="member-count">
+                <option value="-1"></option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+        </div>
+        <div id="info">
+            <table>
+                <caption><h2>Members</h2></caption>
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Angle</th>
+                        <th>Length</th>
+                        <th>Force</th>
+                        <th>Force Type</th>
+                        <th>Member Type</th>
+                        <th>Capacity</th>
+                        <th>Price</th>
+                        <th>Safety Factor</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+
+            </table>
+            <div class="totals">
+                <h2>Determinancy: <span id="determinancy">Indeterminant</span></h2>
+                <h2>Total cost: $<span id="total-cost"></span></h2>
+                <h2>Capacity: <span id="capacity"></span></h2>
+            </div>
+
+        </div>
+        <div id="dimensions">
+            <input type="text" name="length" id="length" disabled>
+            <input type="text" name="angle" id="angle" disabled>
+        </div>
+    </div>
+    
+    <!-- Load React. -->
+    <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+    <!-- <script src="memberTable.js"></script> -->
+</body>
+</html>

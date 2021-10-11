@@ -2,7 +2,7 @@
   "name": "src",
   "version": "1.0.0",
   "description": "",
-  "main": "view/main.html",
+  "main": "view/index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,14 +11,12 @@
     "toolbar": true,
     "width": 1000,
     "height": 1000,
-    "min_width": 1000,
-    "min_height": 1000,
-    "max_width": 1000,
-    "max_height": 1000,
+    "min_width": 400,
+    "min_height": 400,
     "position": "center"
 
   },
   "keywords": [],
-  "author": "",
+  "author": "Zane Larking",
   "license": "ISC"
 }

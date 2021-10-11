@@ -23,7 +23,7 @@ function MouseFactory(HTMLelement) {
     let update = (event) => {        // gets the amount the user has scrolled
         let scrollTop = (window.scrollY !== undefined) ? window.scrollY : (document.documentElement || document.body.parentNode || document.body).scrollTop;
         let scrollLeft = (window.scrollX !== undefined) ? window.scrollX : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
-        console.log(event);
+        // console.log(event);
 
         mousePos.raw.x = event.x - HTMLelement.offsetLeft || mousePos.raw.x;
         mousePos.raw.y = event.y - HTMLelement.offsetTop || mousePos.raw.y;
@@ -31,7 +31,7 @@ function MouseFactory(HTMLelement) {
         mousePos.x = mousePos.raw.x + scrollLeft;
         mousePos.y = mousePos.raw.y + scrollTop;
 
-        console.log(mousePos.x, mousePos.y);
+        // console.log(mousePos.x, mousePos.y);
 };
     HTMLelement.addEventListener("mousemove", update);
     document.addEventListener("scroll", update);
@@ -39,22 +39,16 @@ function MouseFactory(HTMLelement) {
     return mousePos;
 }
 
-// functions
-
-
 // Events
 var mousePos = MouseFactory(canvas);
 console.log(mousePos);
 
-
-
 // initialisation of the bridge object
 var bridge = new Bridge(canvasManager, mousePos);
 
-
 // getting the canvas to take up the appropriate amount of the screen
 var handleResize = () => {
-    console.log(innerWidth);
+    console.log("Screen Width: ", innerWidth);
     // height and width
     let optonsEl = document.querySelector(".options");
     // let infoHeight = Number(getComputedStyle(optonsEl).height.slice(0,-2));
@@ -71,66 +65,55 @@ window.onresize = handleResize;
 
 bridge.init(canvas);
 
-console.log(bridge);
+// console.log(bridge);
 
-// simulating a user clicking on the canvas
-bridge.addJoint(new Pos(100,100));
-console.log(bridge);
+// // simulating a user clicking on the canvas
+// bridge.addJoint(new Pos(100,100));
+// console.log(bridge);
 
-// simulating selecting the joint that was just created
-let j = Array.from(bridge.joints.values())[0];
-j.select();
-j.name = "A";
-console.log(j);
+// // simulating selecting the joint that was just created
+// let j = Array.from(bridge.joints.values())[0];
+// j.select();
+// j.name = "A";
+// console.log(j);
 
-// simulating adding a new joint and connecting selected joints via new members
-bridge.addJoint(new Pos(200,100));
+// // simulating adding a new joint and connecting selected joints via new members
+// bridge.addJoint(new Pos(200,100));
 
-// simulating deselecting the joint
-j.deselect();
+// // simulating deselecting the joint
+// j.deselect();
 
-console.log(j.neighbours);
+// console.log(j.neighbours);
 
-console.log(bridge);
+// console.log(bridge);
 
-bridge.joints.forEach((x) => x.select());
+// bridge.joints.forEach((x) => x.select());
 
-bridge.addJoint(new Pos(200,200));
+// bridge.addJoint(new Pos(200,200));
 
-console.log(j.neighbours);
+// console.log(j.neighbours);
 
-j.members.values().next().value.handleClick(new Pos(200,200));
+// j.members.values().next().value.handleClick(new Pos(200,200));
 
-bridge.removeJoint(j);
+// bridge.removeJoint(j);
 
-bridge.addExtForce(300, Math.PI*3/2);
-// bridge.setRoller();
-// exports = {Bridge: Bridge};
+// bridge.addExtForce(300, Math.PI*3/2);
+// // bridge.setRoller();
+// // exports = {Bridge: Bridge};
 
-console.log(
-    bridge.isDeterminant()
+// console.log(
+//     bridge.isDeterminant()
 
-);
+// );
 
-console.log(bridge);
-
-
-
-
-
-
-
-
-
-
-
+// console.log(bridge);
 
 /*
 ? ===================================================== ?
 ? =================== table Setup ===================== ?
 ? ===================================================== ?
 */
-document.querySelector("#UI").style.gridTemplateRows = "auto min-content";
+// document.querySelector("#UI").style.gridTemplateRows = "auto min-content";
 
 // ? Methods to implimement in bridgeCompoments.mjs
 // Bridge.supports.add(); // f(<Pos> ...args)

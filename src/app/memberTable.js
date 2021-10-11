@@ -4,41 +4,53 @@ function MemberRow(props) {
     var member = props.member;
     return React.createElement(
         "tr",
-        { key: member.id },
+        { id: member.id, key: member.id },
         React.createElement(
             "td",
-            null,
+            { key: member.id + "-id" },
             "" + member.id
         ),
         React.createElement(
             "td",
-            null,
-            member.force + " N"
+            { key: member.id + "-angle" },
+            member.getAngle(Array.from(member.joints.values()).reduce(function (prev, cur) {
+                return cur.pos.y < prev.pos.y ? cur : prev;
+            }), { y: 0 }).toFixed(2) + "\xB0"
         ),
         React.createElement(
             "td",
-            null,
-            member.len().toFixed(2) + " mm"
+            { key: member.id + "-length" },
+            member.getLength().toFixed(2) + " mm"
         ),
         React.createElement(
             "td",
-            null,
+            { key: member.id + "-force" },
+            Math.abs(member.force).toFixed(3) + " N"
+        ),
+        React.createElement(
+            "td",
+            { key: member.id + "-force-type" },
             member.force < 0 ? "Compression" : "Tension"
         ),
         React.createElement(
             "td",
-            null,
-            member.cap(member.bridge.safetyFactor).toFixed(2) + " N"
+            { key: member.id + "-member-type" },
+            "" + (member.material.count > 1 ? member.material.count + " x " : "") + member.material.type.name
         ),
         React.createElement(
             "td",
-            null,
+            { key: member.id + "-capacity" },
+            member.cap(member.bridge.safetyFactor).toFixed(3) + " N"
+        ),
+        React.createElement(
+            "td",
+            { key: member.id + "-cost" },
             "$" + member.cost()
         ),
         React.createElement(
             "td",
-            null,
-            "" + member.cap(member.bridge.safetyFactor) / member.force
+            { key: member.id + "-safety-factor" },
+            "" + (member.safetyFactor() < 10000 ? member.safetyFactor().toFixed(3) : "infinite")
         )
     );
 }

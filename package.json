@@ -1,12 +1,12 @@
 {
-  "name": "Bridge_Tools",
+  "name": "bridge_tools",
   "version": "1.0.0",
   "description": "A tool created to assist in creating a bridge for UoA's ENGGEN 115 course.",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nw src/",
-    "prod": "nwbuild --platfroms win64,osx64,linux64 --buildDir dist/ src/"
+    "build": "nwbuild --platfroms win64,osx64,linux64 --buildDir dist/ src/"
   },
   "repository": {
     "type": "git",
