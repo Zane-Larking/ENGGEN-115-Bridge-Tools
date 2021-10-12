@@ -1562,14 +1562,16 @@ export const Bridge = function (canvasManager, mouse) {
         let memberTable = MemberTable({ members: this.members });
         ReactDOM.render(memberTable, this.memberTableContainer);
 
-        let weakest = [...this.members.values()].reduce((prev, cur) => {
-            console.log(cur.safetyFactor());
-            return ((prev.safetyFactor ? prev.safetyFactor() : 10000) > cur.safetyFactor() ? cur: prev)
-        })
 
         // * updates the failure info component
         // NOTE This assumes there is only one force even though I've made it possible to ad muliple
         if (this.forceJoints.size > 0 && this.isDeterminant()) {
+            
+            let weakest = [...this.members.values()].reduce((prev, cur) => {
+                console.log(cur.safetyFactor());
+                return ((prev.safetyFactor ? prev.safetyFactor() : 10000) > cur.safetyFactor() ? cur: prev)
+            })
+
             var extForce = [...[...this.forceJoints.values()][0].extForces.values()][0];
             console.log(this.forceJoints);
             console.log(extForce);
