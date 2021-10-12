@@ -86,7 +86,7 @@ export const Pos = function(x,y) {
 
 
 // TODO
-export const Vector = function(mag, dir) {
-    this.dir = dir;
+export const Vector = function(mag, angle) {
+    this.angle = angle;
     this.mag = mag;
 }

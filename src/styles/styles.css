@@ -1,11 +1,6 @@
 body {
     margin: 0;
 }
-canvas {
-    /* width: 700px;
-    height: 1000px; */
-
-}
 
 #dimensions {
     position: absolute;
@@ -21,12 +16,20 @@ table {
 tr {
     min-width: 100px;
 }
+tr[selected] {    
+    color: green;
+}
+
 #UI {
     display: grid;
     grid-template-rows: 400px min-content auto;
     /* height: 100vh; */
 }
 
+#info {
+    display: grid;
+    grid-template-columns: auto auto;
+}
 th {
     text-align: left;
 }
