@@ -110,11 +110,11 @@ var zones = {
 // DONE
 var compressiveStrength = (stiffnessFactor) => {
     // Critical Buckling constant = pi^2 x E x I
-    // where, E = 10 Gpa, and I = 6 mm^4 = 6 * 10**(-12)
-    const constant = 10000000000 * Math.PI ** 2 * 6 * 10 ** (-12);
-    let formula = (length, safetyFactor) => {
-        // console.log("compression" ,length, safetyFactor, stiffnessFactor, constant);
-        return (constant / (length / 1000) ** 2) * stiffnessFactor * safetyFactor;
+    // where, E = 12 Gpa, and I = 6 mm^4 = 6 * 10**(-12)
+    const constant = 12000000000 * Math.PI ** 2 * 6 * 10 ** (-12);
+    let formula = (length, reductionFactor) => {
+        // console.log("compression" ,length, reductionFactor, stiffnessFactor, constant);
+        return (constant / (length / 1000) ** 2) * stiffnessFactor * reductionFactor;
     }
     return formula;
 }
@@ -122,21 +122,42 @@ var compressiveStrength = (stiffnessFactor) => {
 // DONE
 var tensionStrength = (stiffnessFactor) => {
     // single capacity for aparata pine is 230 N
-    let formula = (singleCapacity, safetyFactor) => {
-        // console.log("tension", length, safetyFactor, stiffnessFactor, singleCapacity);
-        return singleCapacity * stiffnessFactor * safetyFactor;
+    let formula = (singleCapacity, reductionFactor) => {
+        // console.log("tension", length, reductionFactor, stiffnessFactor, singleCapacity);
+        return singleCapacity * stiffnessFactor * reductionFactor;
     }
     return formula;
 }
 
 // DONE
 var memberTypes = [
-    { id: 0,name: "Type 1", cost: { short: 2200, long: 5250 }, size: 1, tension: tensionStrength(1), compression: compressiveStrength(1) },
-    { id: 1,name: "Type 2", cost: { short: 6600, long: 15750 }, size: 2, tension: tensionStrength(2.28), compression: compressiveStrength(8) },
-    { id: 2,name: "Type 3", cost: { short: 9900, long: 23620 }, size: 3, tension: tensionStrength(3.6), compression: compressiveStrength(27) },
-    { id: 3,name: "Type 4", cost: { short: 8250, long: 19680 }, size: 2, tension: tensionStrength(2), compression: compressiveStrength(26) },
-    { id: 4,name: "Type 5", cost: { short: 11000, long: 26000 }, size: 2, tension: tensionStrength(2), compression: compressiveStrength(56) }
+    { id: 0, name: "Type 1", cost: { short: 2200, long: 5250 }, size: 1, tension: tensionStrength(1), compression: compressiveStrength(1), thickness: 5},
+    { id: 1, name: "Type 2", cost: { short: 6600, long: 15750 }, size: 2, tension: tensionStrength(2.28), compression: compressiveStrength(8), thickness: 10},
+    { id: 2, name: "Type 3", cost: { short: 9900, long: 23620 }, size: 3, tension: tensionStrength(3.6), compression: compressiveStrength(27), thickness: 15},
+    { id: 3, name: "Type 4", cost: { short: 8250, long: 19680 }, size: 2, tension: tensionStrength(2), compression: compressiveStrength(26), thickness: 15},
+    { id: 4, name: "Type 5", cost: { short: 11000, long: 26000 }, size: 2, tension: tensionStrength(2), compression: compressiveStrength(56), thickness: 20}
 ]
+
+let factorLookup = {
+    compression: [
+        {factor: 1, solution: {type: memberTypes[0], count: 1}},
+        {factor: 2, solution: {type: memberTypes[0], count: 2}},
+        {factor: 8, solution: {type: memberTypes[1], count: 1}},
+        {factor: 26, solution: {type: memberTypes[3], count: 1}},
+        {factor: 27, solution: {type: memberTypes[2], count: 1}},
+        {factor: 56, solution: {type: memberTypes[4], count: 1}},
+    ],
+    tension: [
+        {factor: 1, solution: {type: memberTypes[0], count: 1}},
+        {factor: 2, solution: {type: memberTypes[0], count: 2}},
+        {factor: 2.28, solution: {type: memberTypes[1], count: 1}},
+        {factor: 3, solution: {type: memberTypes[0], count: 3}},
+        {factor: 3.6, solution: {type: memberTypes[2], count: 1}},
+        {factor: 4, solution: {type: memberTypes[0], count: 4}},
+        {factor: 4.56, solution: {type: memberTypes[1], count: 2}},
+    ]
+}
+
 
 
 /*
@@ -148,9 +169,9 @@ var memberTypes = [
 
 // DONE
 var jointTypes = [
-    { cost: 150, radius: 10, color: new Color(24, 143, 143) },
-    { cost: 300, radius: 15, color: new Color(13, 74, 74) },
-    { cost: NaN, radius: 20, color: new Color(3, 15, 15) }
+    { cost: 150, radius: 10, size: 5, color: new Color(24, 143, 143) },
+    { cost: 300, radius: 12, size: 7, color: new Color(13, 74, 74) },
+    { cost: 300, radius: 13, size: 100000, color: new Color(3, 15, 15) }
 ]
 
 
@@ -192,8 +213,6 @@ ExternalForce.prototype.handleClick = function (event, mouse) {
 ExternalForce.prototype.isMouseOver = function (mouse) {
     let tipPos = this.tipPos();
     let dist = mouse.perpDistance(this.joint.pos, tipPos);
-    console.log(this.joint.pos, tipPos);
-    console.log(dist);
     return dist != -1 && dist <= this.joint.bridge.size / 2;
     // console.log(dist);
 
@@ -308,7 +327,6 @@ const Joint = function (bridge, pos) {
         // deletes the joint and all members attatched to it    
         // deletes or rebases any members connected to the joint
         this.members.forEach((member) => {
-            console.log(member);
             if (bridge.settings.replaceJoint || rebase) {
                 // gets reference to the members other joint
                 let other = member.other(this);
@@ -364,16 +382,15 @@ const Joint = function (bridge, pos) {
 
     // DONE
     this.setType = () => {
-        this.size = (Array.from(this.members.values).reduce((sum, cur) => {
-            return sum + cur.material.reduce((sum, cur) => {
-                return sum + (cur.type.size * cur.count);
-            });
+        this.size = (Array.from(this.members.values()).reduce((sizeSum, curMember) => {
+            return sizeSum + curMember.material.type.size * curMember.material.count;   
         }, 0));
+        
 
         // sets type
-        this.type = jointTypes.reduce((prev, cur) => {
-            return (this.size <= cur.size ? cur : prev);
-        })
+        this.type = jointTypes.find((jointType) => {
+            return (this.size <= jointType.size);
+        });
     }
 
     // DONE
@@ -541,11 +558,10 @@ const Joint = function (bridge, pos) {
 
 //
 const Member = function (bridge, joints) {
-    this.force;
+    this.force = undefined;
     this.bridge = bridge;
     this.material = { type: memberTypes[0], count: 1 };
     this.joints = joints;
-    this.thickness = 20;
     this.selected = false;
 
     this.id = (() => {
@@ -631,7 +647,7 @@ const Member = function (bridge, joints) {
 
     this.isMouseOver = () => {
         let dist = this.bridge.mouse.perpDistance(...Array.from(this.joints).map((joint) => { return joint.pos; }));
-        return dist != -1 && dist <= this.thickness / 2;
+        return dist != -1 && dist <= this.material.type.thickness;
         // console.log(dist);
 
     }
@@ -663,13 +679,32 @@ const Member = function (bridge, joints) {
 
     }
 
-    this.cap = (safetyFactor) => {
+    this.cap = (reductionFactor) => {
         if (this.force > 0) {
-            return this.material.type.tension(this.getLength(), safetyFactor) * this.material.count;
+            return this.material.type.tension(this.bridge.singleCapacity, reductionFactor) * this.material.count;
         }
         else {
-            return this.material.type.compression(this.getLength(), safetyFactor) * this.material.count;
+            return this.material.type.compression(this.getLength(), reductionFactor) * this.material.count;
         }
+    }
+
+    
+    this.minimumType = () => {
+        // determinds the force type.
+        let forceType = (this.force < 0? "compression" : "tension");
+        // demand / type 1 capacity
+        let factorNeeded = Math.abs(this.force) / memberTypes[0][forceType](this.getLength(), this.bridge.reductionFactor);
+
+        // finds the minimum viable solution to withstand the applied force.
+        for (let {factor, solution} of factorLookup[forceType]) {
+            if (factorNeeded <= factor) {
+                this.material = Object.assign({}, solution);
+                return  this.material;
+            } 
+        }
+
+        
+
     }
 
     // TODO
@@ -681,7 +716,7 @@ const Member = function (bridge, joints) {
 
     // DONE
     this.safetyFactor = () => {
-        return Math.abs(this.cap(this.bridge.safetyFactor)/this.force);
+        return Math.abs(this.cap(this.bridge.reductionFactor)/this.force);
     }
 
     // DONE
@@ -723,8 +758,6 @@ const Member = function (bridge, joints) {
             return 0;
         }
     }
-
-
 };
 
 export const Bridge = function (canvasManager, mouse) {
@@ -756,7 +789,8 @@ export const Bridge = function (canvasManager, mouse) {
             lengthsBtn: document.querySelector("#lengths-btn"),
             anglesBtn: document.querySelector("#angles-btn"),
             labelsBtn: document.querySelector("#labels-btn"),
-            replaceJointsBtn: document.querySelector("#replace-joints-btn")
+            replaceJointsBtn: document.querySelector("#replace-joints-btn"),
+            automateTypeBtn: document.querySelector("#automate-type-btn")
         }
     }
     this.inputEntity;
@@ -772,7 +806,7 @@ export const Bridge = function (canvasManager, mouse) {
     this.forceJoints = new Set();
     this.pin;
     this.roller;
-    this.safetyFactor = 0.8;
+    this.reductionFactor = 0.8;
     this.singleCapacity = 230;
 
     this.init = (canvas) => {
@@ -782,6 +816,13 @@ export const Bridge = function (canvasManager, mouse) {
         canvas.addEventListener("mousemove", this.handleMouseMove);
         canvas.addEventListener("mouseup", this.handleMouseUp);
         canvas.addEventListener("mouseup", this.handleMouseUp);
+
+        this.UI.btns.automateTypeBtn.addEventListener("click", () => {
+            this.members.forEach((member) => {
+                console.log(member.minimumType());
+            })
+            this.update();
+        });
 
         this.UI.btns.forcesBtn.addEventListener("click", () => {
             this.settings.showForces = (this.settings.showForces ? false : true);
@@ -808,7 +849,7 @@ export const Bridge = function (canvasManager, mouse) {
             this.draw();
         });
 
-        this.UI.btns.forceBtn.addEventListener("click", ()=>this.addExtForce());
+        this.UI.btns.forceBtn.addEventListener("click", ()=> this.addExtForce());
 
         this.UI.btns.pinBtn.addEventListener("click", this.setPin);
 
@@ -817,8 +858,6 @@ export const Bridge = function (canvasManager, mouse) {
         this.UI.typeSelector.addEventListener("change", this.setMemberMaterial);
         
         this.UI.countSelector.addEventListener("change", this.setMemberMaterial);
-
-
 
 
         // workaround for making keydown events work for canvas
@@ -830,15 +869,14 @@ export const Bridge = function (canvasManager, mouse) {
 
         /* For keyboard event */
         document.addEventListener('keydown', (event) => {
-            if (lastDownTarget == canvas) {
+            // if (lastDownTarget == canvas) {
                 this.handleKeyDown(event);
-            }
+            // }
         }, false);
         this.update();
     }
 
     this.handleKeyDown = (event) => {
-        console.log("key pressed");
         if (event.defaultPrevented) {
             return; // Do nothing if the event was already processed
         }
@@ -984,12 +1022,16 @@ export const Bridge = function (canvasManager, mouse) {
         let forces = Array.from(this.forceJoints.values()).reduce((arr, joint) => [...arr, ...joint.extForces], []);
 
         // runs handleClick on every entity 
-        console.log("clicked");
         let entityClicked = [...forces, ...this.joints, ...this.members].find((entity) => {
-            return entity.handleClick(event, this.mouse);
+            let handleCode = entity.handleClick(event, this.mouse);
+            if (handleCode == 2) {
+                this.update();
+            }
+            if (handleCode == 1) {
+                this.draw();
+            }
+            return handleCode;
         });
-        console.log("Selected Entities: " , this.selected);
-
         console.log("clicked on: ", entityClicked ? entityClicked : "The Canvas");
 
         if (!entityClicked && !event.shiftKey) {
@@ -1003,7 +1045,7 @@ export const Bridge = function (canvasManager, mouse) {
         }
         else {
             // this.draw();
-            this.update();
+            // this.update();
         }
         this.updateDimensionInputs();
     }
@@ -1029,7 +1071,7 @@ export const Bridge = function (canvasManager, mouse) {
         // add pin reference to new joint
         joint.pin = this.pin;
 
-        //updates the view
+        // updates the view
         this.update();
     }
 
@@ -1107,6 +1149,7 @@ export const Bridge = function (canvasManager, mouse) {
         })
         //updates the view
         this.update();
+        
     }
 
     // TODO
@@ -1311,7 +1354,6 @@ export const Bridge = function (canvasManager, mouse) {
         }
         console.log("This bridge can have it's reaction forces calculated :)")
 
-        console.log(this.pin); 
 
         let forces = Array.from(this.forceJoints).reduce((arr, joint) => {
             return [...arr, ...joint.extForces];
@@ -1369,7 +1411,7 @@ export const Bridge = function (canvasManager, mouse) {
             // returns false if the bridge is not determinant
             if (!this.isDeterminant()) {
                 this.UI.determinancy.innerText = "Indeterminant";
-                // resolve(false);
+                resolve(false);
                 // return;
             }
             else {
@@ -1377,6 +1419,9 @@ export const Bridge = function (canvasManager, mouse) {
             }
 
             // deletes
+            this.members.forEach((member) => {
+                member.force = undefined;
+            })
 
             // calculates reaction forces at pin and roller
             if (!this.calcReactions()) {
@@ -1387,7 +1432,6 @@ export const Bridge = function (canvasManager, mouse) {
             
             this.stress().then((result) => {
                 // calculates the stress in each member
-                console.log(result);
                 if (!result) {
                     console.log("Couldn't calculate member stresses");
                 }
@@ -1450,7 +1494,7 @@ export const Bridge = function (canvasManager, mouse) {
                 return member.force != undefined;
             })
         
-            console.log("Equation parameters:", unknownMembers, knownMembers, extForces);
+            // console.log("Equation parameters:", unknownMembers, knownMembers, extForces);
             let {SumFx, SumFy} = this.functionFactory(joint, unknownMembers, knownMembers, extForces);
             
             
@@ -1464,8 +1508,8 @@ export const Bridge = function (canvasManager, mouse) {
                 var x_guess = [1,2] //Guess the initial values of the solution.
                 var s = solver.solve(x_guess, undefined, 1e-15) //Solve the equation
                 var x = s.x //assign the calculated solution array to the variable x
-                console.log(`%c${x}`, "background: rgb(202, 202, 202) ; color: rgb(12, 86, 166)");
-                console.log(joint);
+                // console.log(`%c${x}`, "background: rgb(202, 202, 202) ; color: rgb(12, 86, 166)");
+                // console.log(joint);
                 // console.log(s.report); //Print solver report
                 solver.remove(); //required to free the memory in C++
 
@@ -1480,30 +1524,36 @@ export const Bridge = function (canvasManager, mouse) {
         });
     }
 
-    this.recurseStress = (jointsArr, loopCount) => {
+    this.recurseStress = (jointsArr) => {
+        console.log(jointsArr);
         return new Promise((resolve)=>{
-            
-            loopCount ++;
             // loops until ever member has had their force updated 
-            if (Array.from(this.members).some((member) => member.force == undefined) && loopCount <= 1000) {
+            if (Array.from(this.members).some((member) => member.force == undefined)) {
                 // find a joint with 2 or less unknown forces
-                let index = jointsArr.indexOf((joint) => {
+                let index = jointsArr.findIndex((joint) => {
                     // filters members to those that have unknown forces
-                    return Array.from(joint.members).filter((member) => {
-                        member.force == undefined;
-                    }).length <= 2; 
-                })
-                let joint = jointsArr.splice(index, 1)[0];
+                    let unknownMemberCount = Array.from(joint.members).filter((member) => {
+                        return member.force == undefined;
+                    }).length;
+                    console.log(unknownMemberCount);
+                    return unknownMemberCount <= 2; 
+                });
+                let joint;
+                console.log(index);
+                if (index != -1) {
+                    joint = jointsArr.splice(index, 1)[0];
+                }
                 if (joint) {
+                    console.log(joint.id);
                     this.solveLoads(joint).then(() => {
-                        this.recurseStress(jointsArr, loopCount).then((result) => {
+                        this.recurseStress(jointsArr).then((result) => {
                             resolve(result);
                         });
                     });
-                    console.log("Test!");
                 } 
                 //if there are members without forces but no solvable joints then return false 
                 else {
+                    console.log("Solvable Joint not found");
                     resolve(false);
                 }
             } else {resolve(true)}
@@ -1514,17 +1564,17 @@ export const Bridge = function (canvasManager, mouse) {
     this.stress = () => {
         return new Promise((resolve) => {
             
-            // unsets the force property on each member
+            // // unsets the force property on each member
             this.members.forEach((member) => {
                 member.force = undefined; 
             });
-            // resolve(false);
-            // return;
+            this.members.forEach((member) => {
+                console.log(member.force); 
+            });
             
-            let joitsArr = Array.from(this.joints);
-            let loopCount = 0;
+            let jointsArr = Array.from(this.joints);
             
-            this.recurseStress(joitsArr, loopCount).then((result) => {
+            this.recurseStress(jointsArr).then((result) => {
                 console.log("Stress Promise: ", result);
                 resolve(result);
             })
@@ -1533,7 +1583,7 @@ export const Bridge = function (canvasManager, mouse) {
 
     // TODO - Testing required
     this.cost = () => {
-        // calcutes total cost (runs cost methods on each bridge entity)
+        // calcutes total cost (runs cost methods on each bridge entity) of individual trusses
         return [...this.members, ...this.joints].reduce((total, cur) => total + cur.cost(), 0);
     }
 
@@ -1542,7 +1592,6 @@ export const Bridge = function (canvasManager, mouse) {
         // TODO
         // * calculates member capacities and total capacity component
         let solved = await this.calc();
-        console.log(solved);
 
         // TODO
         // * deteminancy notification
@@ -1568,15 +1617,10 @@ export const Bridge = function (canvasManager, mouse) {
         if (this.forceJoints.size > 0 && this.isDeterminant()) {
             
             let weakest = [...this.members.values()].reduce((prev, cur) => {
-                console.log(cur.safetyFactor());
                 return ((prev.safetyFactor ? prev.safetyFactor() : 10000) > cur.safetyFactor() ? cur: prev)
             })
 
             var extForce = [...[...this.forceJoints.values()][0].extForces.values()][0];
-            console.log(this.forceJoints);
-            console.log(extForce);
-
-            console.log(weakest);
             let capacity = extForce.mag * weakest.safetyFactor();
             let breakingForce = Math.abs(weakest.force) * weakest.safetyFactor();
             
@@ -1589,8 +1633,13 @@ export const Bridge = function (canvasManager, mouse) {
             ReactDOM.render(failureInfo, this.failureInfoContainer);
         }
 
+        // ! replace with specific calls else where
+        // * update joint type and size 
+        this.joints.forEach((joint) => {
+            joint.setType();
+        });
 
-        // *draws the canvas
+        // * draws the canvas
         this.draw();
 
         // adjust the size of components
@@ -1680,20 +1729,20 @@ export const Bridge = function (canvasManager, mouse) {
 
             // member capacity
             let [joint1, joint2] = Array.from(member.joints.values());
-            let percentage = Math.min(Math.abs(member.force||0 / member.cap(this.safetyFactor)), 1);
-
+            let percentage = Math.min((Math.abs(member.force)||0) / member.cap(this.reductionFactor), 1);
 
             //member color
             let forceColor = Object.assign(member.force <= 0 ? compressionColor : tensionColor);
             let maxLength = (member.force <= 0 ? 159: 151);
-            // console.log("Is force greater than capacity?", Math.abs(member.force) > member.cap(this.safetyFactor), "Force", member.force, "capacity", member.cap(this.safetyFactor), "PERCENTAGE", percentage);
+            // console.log("Is force greater than capacity?", Math.abs(member.force) > member.cap(this.reductionFactor), "Force", member.force, "capacity", member.cap(this.reductionFactor), "PERCENTAGE", percentage);
             let color = (
-                member.getLength() >= maxLength || Math.abs(member.force) > member.cap(this.safetyFactor) ? 
+                member.getLength() >= maxLength || Math.abs(member.force) > member.cap(this.reductionFactor) ? 
                 invalidColor:
                 new Color().lerp(neutralColor, forceColor, percentage)
             );
 
-            // console.log(color);
+            // lines
+            let thickness = member.material.type.thickness * member.material.count;
 
             // selection glow
             let selected = this.selected.members.has(member);
@@ -1702,13 +1751,32 @@ export const Bridge = function (canvasManager, mouse) {
                 this.CM.ctx.shadowBlur = 20;
                 this.CM.ctx.shadowColor = selectedColor.rgb();
                 this.CM.ctx.fillStyle = selectedColor.rgb();
-                this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, selectedColor.rgb(), this.size * 1.2);
+                this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, selectedColor.rgb(), thickness + 2);
                 this.CM.ctx.shadowBlur = 0;
 
             }
 
             // Draws the member as a line between its joints
-            this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, color.rgb(), this.size);
+            this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, color.rgb(), thickness);
+            // differentiation between different member types
+            if (member.material.count == 2) {
+                this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, "rgb(0,0,0)", 2);  
+            }
+            else if (member.material.count == 3) {
+                this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, "rgb(0,0,0)", thickness/3+2);
+                this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, color.rgb(), thickness/3-2);
+            }
+            else if (member.material.count == 4) {
+                this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, "rgb(0,0,0)", thickness/2+2);
+                this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, color.rgb(), thickness/2-2);
+                this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, "rgb(0,0,0)", 2);
+            }
+            else if (member.material.type.id == 3) {
+                this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, "rgb(255,255,255)", thickness/3);
+            }
+            else if (member.material.type.id == 4) {
+                this.CM.line(joint1.pos.x, joint1.pos.y, joint2.pos.x, joint2.pos.y, "rgb(255,255,255)", thickness/2);
+            }
 
 
 
@@ -1717,7 +1785,18 @@ export const Bridge = function (canvasManager, mouse) {
         // DONE
         // draws all joints
         this.joints.forEach((joint) => {
-            let color = (this.selected.joints.has(joint) ? selectedColor : jointColor)
+            // selection glow
+            let selected = this.selected.joints.has(joint);
+            if (selected) {
+
+                this.CM.ctx.shadowBlur = 20;
+                this.CM.ctx.shadowColor = selectedColor.rgb();
+                this.CM.ctx.fillStyle = selectedColor.rgb();
+                this.CM.circle(joint.pos.x, joint.pos.y, joint.type.radius, selectedColor.rgb())
+                this.CM.ctx.shadowBlur = 0;
+
+            }
+            let color = (this.selected.joints.has(joint) ? selectedColor : joint.type.color);
             this.CM.circle(joint.pos.x, joint.pos.y, joint.type.radius, color.rgb())
         });
 
